@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Electro Mercato - Admin Panel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --primary: #6c5ce7;
+            --primary-light: #a29bfe;
+            --bg: #0f0f23;
+            --bg-card: #161630;
+            --bg-surface: #1c1c3a;
+            --bg-input: #12122a;
+            --text: #e8e8f0;
+            --text-muted: #8888aa;
+            --border: rgba(108, 92, 231, 0.2);
+            --danger: #e74c3c;
+            --danger-hover: #c0392b;
+            --success: #00cec9;
+            --success-hover: #00b5b1;
+            --warn: #feca57;
+            --gradient-1: linear-gradient(135deg, #6c5ce7, #a29bfe);
+            --radius: 12px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            direction: rtl;
+        }
+
+        .bg-anim {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0; pointer-events: none;
+        }
+        .bg-anim::before {
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(ellipse at 20% 50%, rgba(108,92,231,0.06) 0%, transparent 50%),
+                        radial-gradient(ellipse at 80% 20%, rgba(0,206,201,0.04) 0%, transparent 50%);
+            animation: bgFloat 20s ease-in-out infinite;
+        }
+        @keyframes bgFloat {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(2%, -2%); }
+        }
+
+        .container {
+            position: relative; z-index: 1;
+            max-width: 960px; margin: 0 auto;
+            padding: 2rem 1.5rem 4rem;
+        }
+
+        .header {
+            text-align: center; padding: 2.5rem 0 1rem;
+        }
+        .header .logo-icon {
+            width: 56px; height: 56px; background: var(--gradient-1); border-radius: 16px;
+            display: inline-flex; align-items: center; justify-content: center; font-size: 1.6rem;
+            margin-bottom: 1rem;
+        }
+        .header h1 {
+            font-size: 1.8rem; font-weight: 800; letter-spacing: -1px; margin-bottom: 0.3rem;
+        }
+        .header h1 span {
+            background: var(--gradient-1);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .header p { color: var(--text-muted); font-size: 0.95rem; }
+
+        .top-actions {
+            display: flex; gap: 0.75rem; justify-content: center;
+            flex-wrap: wrap; margin: 2rem 0 1.5rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem; border-radius: var(--radius); font-size: 0.9rem;
+            font-weight: 600; cursor: pointer; transition: 0.25s; border: none;
+            font-family: 'Inter', sans-serif; display: inline-flex; align-items: center;
+            gap: 0.5rem;
+        }
+        .btn:active { transform: scale(0.97); }
+        .btn-primary {
+            background: var(--gradient-1); color: #fff;
+            box-shadow: 0 4px 20px rgba(108,92,231,0.35);
+        }
+        .btn-primary:hover { box-shadow: 0 6px 28px rgba(108,92,231,0.5); transform: translateY(-1px); }
+        .btn-success { background: var(--success); color: #0f0f23; }
+        .btn-success:hover { background: var(--success-hover); }
+        .btn-danger { background: var(--danger); color: #fff; }
+        .btn-danger:hover { background: var(--danger-hover); }
+        .btn-outline {
+            background: transparent; color: var(--primary-light);
+            border: 1px solid var(--border);
+        }
+        .btn-outline:hover { background: rgba(108,92,231,0.1); }
+
+        .product-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            margin-bottom: 0.75rem;
+            overflow: hidden;
+            transition: 0.3s;
+        }
+        .product-card:hover { border-color: rgba(108,92,231,0.35); }
+
+        .card-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 1rem 1.25rem; cursor: pointer; user-select: none;
+            gap: 0.75rem;
+        }
+        .card-header:hover { background: rgba(108,92,231,0.05); }
+
+        .card-header .info {
+            display: flex; align-items: center; gap: 0.75rem;
+            min-width: 0; flex: 1;
+        }
+        .card-header .icon {
+            width: 36px; height: 36px; background: var(--bg-surface);
+            border-radius: 10px; display: flex; align-items: center;
+            justify-content: center; font-size: 1.1rem; flex-shrink: 0;
+        }
+        .card-header .title {
+            font-weight: 600; font-size: 0.95rem; white-space: nowrap;
+            overflow: hidden; text-overflow: ellipsis;
+        }
+        .card-header .brand-tag {
+            font-size: 0.7rem; padding: 0.2rem 0.55rem; border-radius: 6px;
+            background: rgba(108,92,231,0.15); color: var(--primary-light);
+            font-weight: 600; flex-shrink: 0;
+        }
+        .card-header .chevron {
+            color: var(--text-muted); transition: 0.3s; font-size: 0.8rem;
+            flex-shrink: 0;
+        }
+        .product-card.open .card-header .chevron { transform: rotate(180deg); }
+
+        .card-body {
+            display: none; padding: 0 1.25rem 1.25rem;
+        }
+        .product-card.open .card-body { display: block; }
+
+        .field-group {
+            display: grid; gap: 0.75rem; margin-bottom: 1rem;
+        }
+        .field-row {
+            display: grid; gap: 0.75rem;
+        }
+        .field-row.cols-2 { grid-template-columns: 1fr 1fr; }
+        .field-row.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+        label {
+            display: block; font-size: 0.75rem; font-weight: 600;
+            color: var(--text-muted); margin-bottom: 0.3rem; text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        input, select {
+            width: 100%; padding: 0.6rem 0.8rem; border-radius: 8px;
+            border: 1px solid var(--border); background: var(--bg-input);
+            color: var(--text); font-size: 0.88rem; font-family: 'Inter', sans-serif;
+            transition: 0.25s; outline: none;
+        }
+        input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(108,92,231,0.15); }
+        select { cursor: pointer; appearance: none; -webkit-appearance: none; }
+        select option { background: var(--bg-input); color: var(--text); }
+
+        .prices-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem;
+        }
+        .price-field {
+            display: flex; flex-direction: column;
+        }
+        .price-field .curr-label {
+            display: flex; align-items: center; gap: 0.3rem;
+        }
+        .curr-flag { font-size: 0.9rem; }
+
+        .delete-btn {
+            background: rgba(231, 76, 60, 0.1); color: var(--danger);
+            border: 1px solid rgba(231, 76, 60, 0.2);
+            padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.8rem;
+            font-weight: 600; cursor: pointer; transition: 0.25s; font-family: 'Inter', sans-serif;
+            display: flex; align-items: center; gap: 0.4rem;
+        }
+        .delete-btn:hover { background: var(--danger); color: #fff; }
+
+        .divider { border: none; border-top: 1px solid var(--border); margin: 0.75rem 0; }
+
+        .status-bar {
+            position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 0.75rem 1.5rem;
+            font-size: 0.85rem; color: var(--success); font-weight: 600;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            z-index: 100; display: none;
+            animation: slideUp 0.3s ease-out;
+        }
+        @keyframes slideUp {
+            from { transform: translateX(-50%) translateY(20px); opacity: 0; }
+            to { transform: translateX(-50%) translateY(0); opacity: 1; }
+        }
+
+        .empty-state {
+            text-align: center; padding: 3rem 1rem; color: var(--text-muted);
+        }
+        .empty-state .emoji { font-size: 2.5rem; margin-bottom: 0.75rem; }
+
+        .search-bar {
+            margin-bottom: 1.25rem;
+        }
+        .search-bar input {
+            width: 100%; padding: 0.75rem 1.1rem 0.75rem 2.8rem;
+            border-radius: var(--radius); font-size: 0.95rem;
+            background: var(--bg-card);
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='%238888aa' viewBox='0 0 24 24'%3E%3Cpath d='M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: right 1rem center;
+        }
+
+        .product-count {
+            text-align: center; color: var(--text-muted); font-size: 0.82rem;
+            margin-bottom: 1rem;
+        }
+
+        @media (max-width: 640px) {
+            .container { padding: 1rem; }
+            .prices-grid { grid-template-columns: repeat(2, 1fr); }
+            .field-row.cols-2, .field-row.cols-3 { grid-template-columns: 1fr; }
+            .top-actions { flex-direction: column; align-items: stretch; }
+            .btn { justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-anim"></div>
+    <div class="container">
+        <div class="header">
+            <div class="logo-icon">&#9889;</div>
+            <h1>Electro <span>Mercato</span></h1>
+            <p>لوحة التحكم - إدارة المنتجات</p>
+        </div>
+
+        <div class="top-actions">
+            <button class="btn btn-success" onclick="downloadUpdated()">&#11015; تحميل index.html المحدث</button>
+            <button class="btn btn-primary" onclick="addProduct()">+ إضافة منتج جديد</button>
+        </div>
+
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="بحث عن منتج..." oninput="filterProducts()">
+        </div>
+        <div class="product-count" id="productCount"></div>
+
+        <div id="productsList"></div>
+    </div>
+
+    <div class="status-bar" id="statusBar"></div>
+
+    <script>
+        var products = [
+            { name: "Standard PS5 Controller", img: "images/standard-ps5-controller.jpg", brand: "playstation", category: "controllers", prices: {EG:"4,100",US:"74.99",JP:"11,480",CN:"529",GR:"79.99",CH:"55.45"} },
+            { name: "Special PS5 Controller", img: "images/special-ps5-controller.jpg", brand: "playstation", category: "controllers", prices: {EG:"4,400",US:"84.95",JP:"11,980",CN:"66.37",GR:"62.64",CH:"66.37"} },
+            { name: "Edge Pro Controller", img: "images/edge-pro-controller.jpg", brand: "playstation", category: "controllers", prices: {EG:"199.99",US:"199.99",JP:"1,599",CN:"1,599",GR:"239.99",CH:"177"} },
+            { name: "PS5 Digital", img: "images/ps5-digital.jpg", brand: "playstation", category: "consoles", prices: {EG:"33,000",US:"599.99",JP:"89,980",CN:"3,999",GR:"399.90",CH:"399.90"} },
+            { name: "PS5 Standard", img: "images/ps5-standard.jpg", brand: "playstation", category: "consoles", prices: {EG:"38,000",US:"649.99",JP:"97,980",CN:"4,399",GR:"519.90",CH:"519.90"} },
+            { name: "PS5 Pro", img: "images/ps5-pro.jpg", brand: "playstation", category: "consoles", prices: {EG:"48,000",US:"899.99",JP:"137,980",CN:"6,299",GR:"777",CH:"777"} },
+            { name: "PS5 Slim", img: "images/ps5-slim.jpg", brand: "playstation", category: "consoles", prices: {EG:"",US:"499.99",JP:"",CN:"",GR:"",CH:""} },
+            { name: "PlayStation Portal", img: "images/ps-portal.jpg", brand: "playstation", category: "accessories", prices: {EG:"12,500",US:"249.99",JP:"39,980",CN:"1,749",GR:"189",CH:"189"} },
+            { name: "Nintendo Switch - OLED", img: "images/switch-oled.jpg", brand: "nintendo", category: "consoles", prices: {EG:"",US:"399.99",JP:"",CN:"",GR:"",CH:""} },
+            { name: "Nintendo Switch", img: "images/switch.jpg", brand: "nintendo", category: "consoles", prices: {EG:"",US:"339.99",JP:"",CN:"",GR:"",CH:""} },
+            { name: "Nintendo Switch 2 Bundle", img: "images/switch2-bundle.jpg", brand: "nintendo", category: "consoles", prices: {EG:"",US:"499.99",JP:"",CN:"",GR:"",CH:""} },
+            { name: "Nintendo Switch 2", img: "images/switch2.jpg", brand: "nintendo", category: "consoles", prices: {EG:"",US:"449.99",JP:"",CN:"",GR:"",CH:""} },
+            { name: "Nintendo Switch Lite", img: "images/switch-lite.jpg", brand: "nintendo", category: "consoles", prices: {EG:"",US:"229.99",JP:"",CN:"",GR:"",CH:""} },
+            { name: "Nintendo Controller Pro", img: "images/nin-controller-pro.jpg", brand: "nintendo", category: "controllers", prices: {EG:"",US:"79.99",JP:"",CN:"",GR:"",CH:""} },
+            { name: "Nintendo Joy-Con", img: "images/joy-con.jpg", brand: "nintendo", category: "accessories", prices: {EG:"",US:"89.99",JP:"",CN:"",GR:"",CH:""} }
+        ];
+
+        var currencies = [
+            { key: "EG", label: "ج.م", name: "EGP", flag: "\uD83C\uDDFA\uD83C\uDDEC" },
+            { key: "US", label: "$", name: "USD", flag: "\uD83C\uDDFA\uD83C\uDDF8" },
+            { key: "JP", label: "¥", name: "JPY", flag: "\uD83C\uDDEF\uD83C\uDDF5" },
+            { key: "CN", label: "¥", name: "CNY", flag: "\uD83C\uDDE8\uD83C\uDDF3" },
+            { key: "GR", label: "\u20AC", name: "EUR", flag: "\uD83C\uDDEA\uD83C\uDDFA" },
+            { key: "CH", label: "Fr", name: "CHF", flag: "\uD83C\uDDE8\uD83C\uDDED" }
+        ];
+
+        var openCards = {};
+
+        function renderList() {
+            var list = document.getElementById("productsList");
+            var query = document.getElementById("searchInput").value.toLowerCase();
+            var filtered = [];
+            for (var i = 0; i < products.length; i++) {
+                var p = products[i];
+                if (
+                    p.name.toLowerCase().indexOf(query) !== -1 ||
+                    p.brand.toLowerCase().indexOf(query) !== -1 ||
+                    p.category.toLowerCase().indexOf(query) !== -1
+                ) {
+                    filtered.push(i);
+                }
+            }
+            document.getElementById("productCount").textContent = filtered.length + " من أصل " + products.length + " منتج";
+
+            if (filtered.length === 0) {
+                list.innerHTML = '<div class="empty-state"><div class="emoji">&#128269;</div><p>لا توجد نتائج</p></div>';
+                return;
+            }
+
+            var html = "";
+            for (var fi = 0; fi < filtered.length; fi++) {
+                var idx = filtered[fi];
+                var p = products[idx];
+                var isOpen = openCards[idx] ? " open" : "";
+                var brandLabel = p.brand === "playstation" ? "PlayStation" : "Nintendo";
+                var icon = p.brand === "playstation" ? "\uD83C\uDFAE" : "\uD83C\uDFD7\uFE0F";
+
+                html += '<div class="product-card' + isOpen + '" id="card' + idx + '">';
+                html += '<div class="card-header" onclick="toggleCard(' + idx + ')">';
+                html += '<div class="info">';
+                html += '<div class="icon">' + icon + '</div>';
+                html += '<div class="title" id="headerTitle' + idx + '">' + escHtml(p.name) + '</div>';
+                html += '<span class="brand-tag">' + brandLabel + '</span>';
+                html += '</div>';
+                html += '<span class="chevron">&#9660;</span>';
+                html += '</div>';
+                html += '<div class="card-body">';
+
+                html += '<div class="field-group">';
+                html += '<div class="field-row cols-2">';
+                html += '<div><label>اسم المنتج</label>';
+                html += '<input type="text" value="' + escAttr(p.name) + '" oninput="updateField(' + idx + ',\'name\',this.value)"></div>';
+                html += '<div><label>العلامة التجارية</label>';
+                html += '<select onchange="updateField(' + idx + ',\'brand\',this.value)">';
+                html += '<option value="playstation"' + (p.brand === "playstation" ? " selected" : "") + '>PlayStation</option>';
+                html += '<option value="nintendo"' + (p.brand === "nintendo" ? " selected" : "") + '>Nintendo</option>';
+                html += '</select></div>';
+                html += '</div>';
+
+                html += '<div class="field-row cols-2">';
+                html += '<div><label>الفئة</label>';
+                html += '<select onchange="updateField(' + idx + ',\'category\',this.value)">';
+                html += '<option value="controllers"' + (p.category === "controllers" ? " selected" : "") + '>\uD83C\uDFAE Controllers</option>';
+                html += '<option value="consoles"' + (p.category === "consoles" ? " selected" : "") + '>\uD83D\uDDA5\uFE0F Consoles</option>';
+                html += '<option value="accessories"' + (p.category === "accessories" ? " selected" : "") + '>\uD83D\uDCF1 Accessories</option>';
+                html += '</select></div>';
+                html += '<div><label>صورة المنتج</label>';
+                html += '<input type="text" value="' + escAttr(p.img) + '" oninput="updateField(' + idx + ',\'img\',this.value)" dir="ltr" style="text-align:left"></div>';
+                html += '</div>';
+                html += '</div>';
+
+                html += '<hr class="divider">';
+                html += '<label style="margin-bottom:0.5rem;display:block">الأسعار</label>';
+                html += '<div class="prices-grid">';
+                for (var ci = 0; ci < currencies.length; ci++) {
+                    var c = currencies[ci];
+                    var val = p.prices[c.key] || "";
+                    html += '<div class="price-field">';
+                    html += '<div class="curr-label"><span class="curr-flag">' + c.flag + '</span> <span>' + c.name + '</span></div>';
+                    html += '<input type="text" value="' + escAttr(val) + '" dir="ltr" style="text-align:left" oninput="updatePrice(' + idx + ',\'' + c.key + '\',this.value)">';
+                    html += '</div>';
+                }
+                html += '</div>';
+
+                html += '<hr class="divider">';
+                html += '<div style="display:flex;justify-content:flex-end">';
+                html += '<button class="delete-btn" onclick="deleteProduct(' + idx + ')">&#128465; حذف المنتج</button>';
+                html += '</div>';
+
+                html += '</div></div>';
+            }
+            list.innerHTML = html;
+        }
+
+        function toggleCard(idx) {
+            openCards[idx] = !openCards[idx];
+            var card = document.getElementById("card" + idx);
+            if (card) card.classList.toggle("open");
+        }
+
+        function updateField(idx, field, value) {
+            products[idx][field] = value;
+            if (field === "name") {
+                var el = document.getElementById("headerTitle" + idx);
+                if (el) el.textContent = value;
+            }
+            markChanged();
+        }
+
+        function updatePrice(idx, curr, value) {
+            products[idx].prices[curr] = value;
+            markChanged();
+        }
+
+        function addProduct() {
+            var p = {
+                name: "منتج جديد",
+                img: "images/new-product.jpg",
+                brand: "playstation",
+                category: "controllers",
+                prices: { EG: "", US: "0", JP: "", CN: "", GR: "", CH: "" }
+            };
+            products.push(p);
+            openCards[products.length - 1] = true;
+            renderList();
+            showStatus("تمت إضافة منتج جديد");
+        }
+
+        function deleteProduct(idx) {
+            if (!confirm("هل أنت متأكد من حذف \"" + products[idx].name + "\"؟")) return;
+            products.splice(idx, 1);
+            var newOpen = {};
+            for (var k in openCards) {
+                var ki = parseInt(k);
+                if (ki < idx) newOpen[ki] = openCards[ki];
+                else if (ki > idx) newOpen[ki - 1] = openCards[ki];
+            }
+            openCards = newOpen;
+            renderList();
+            showStatus("تم حذف المنتج");
+        }
+
+        function filterProducts() {
+            renderList();
+        }
+
+        function buildProductsJS() {
+            var lines = [];
+            lines.push("var products = [");
+            for (var i = 0; i < products.length; i++) {
+                var p = products[i];
+                var line = "    { ";
+                line += "name: " + jsStr(p.name) + ", ";
+                line += "img: " + jsStr(p.img) + ", ";
+                line += "brand: " + jsStr(p.brand) + ", ";
+                line += "category: " + jsStr(p.category) + ", ";
+                line += "icon: " + jsStr(getIcon(p)) + ", ";
+                line += "badgeClass: " + jsStr(getBadge(p)) + ", ";
+                line += "colors: [], ";
+                line += "prices: {";
+                var priceParts = [];
+                var keys = ["EG", "US", "JP", "CN", "GR", "CH"];
+                for (var k = 0; k < keys.length; k++) {
+                    priceParts.push(keys[k] + ":" + jsStr(p.prices[keys[k]] || ""));
+                }
+                line += priceParts.join(",");
+                line += "}, alt: null }";
+                if (i < products.length - 1) line += ",";
+                lines.push(line);
+            }
+            lines.push("];");
+            return lines.join("\n");
+        }
+
+        function getIcon(p) {
+            if (p.brand === "playstation") {
+                if (p.category === "controllers") return "\uD83C\uDFAE";
+                if (p.category === "consoles") return "\uD83D\uDDA5\uFE0F";
+                return "\uD83D\uDCF1";
+            } else {
+                if (p.category === "controllers") return "\uD83C\uDFAE";
+                return "\uD83C\uDFD7\uFE0F";
+            }
+        }
+
+        function getBadge(p) {
+            if (p.brand === "playstation") return "badge-ps";
+            return "badge-nin";
+        }
+
+        function jsStr(s) {
+            return '"' + s.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, "\\n") + '"';
+        }
+
+        function downloadUpdated() {
+            showStatus("جاري تحميل index.html من GitHub...");
+            fetch("https://raw.githubusercontent.com/yusuf1bassam/electro-mercato/main/index.html")
+                .then(function(resp) {
+                    if (!resp.ok) throw new Error("HTTP " + resp.status);
+                    return resp.text();
+                })
+                .then(function(html) {
+                    var newProductsJS = buildProductsJS();
+                    var regex = /var\s+products\s*=\s*\[[\s\S]*?\];/;
+                    var match = html.match(regex);
+                    if (!match) {
+                        showStatus("\u274C لم يتم العثور على مصفوفة products في index.html");
+                        return;
+                    }
+                    var updated = html.substring(0, match.index) + newProductsJS + html.substring(match.index + match[0].length);
+                    var blob = new Blob([updated], { type: "text/html" });
+                    var url = URL.createObjectURL(blob);
+                    var a = document.createElement("a");
+                    a.href = url;
+                    a.download = "index.html";
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    showStatus("\u2705 تم تحميل index.html بنجاح!");
+                })
+                .catch(function(err) {
+                    showStatus("\u274C خطأ: " + err.message);
+                });
+        }
+
+        function showStatus(msg) {
+            var bar = document.getElementById("statusBar");
+            bar.textContent = msg;
+            bar.style.display = "block";
+            clearTimeout(bar._timer);
+            bar._timer = setTimeout(function() {
+                bar.style.display = "none";
+            }, 3000);
+        }
+
+        function escHtml(s) {
+            var div = document.createElement("div");
+            div.appendChild(document.createTextNode(s));
+            return div.innerHTML;
+        }
+
+        function escAttr(s) {
+            return s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        function markChanged() {
+            document.title = "\u25CF Electro Mercato Admin";
+        }
+
+        renderList();
+    </script>
+</body>
+</html>
